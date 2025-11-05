@@ -1,0 +1,41 @@
+name: Build APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        npm install -g cordova@11.0.0
+
+    - name: Create Cordova project and copy www
+      run: |
+        rm -rf AhmyrixCordova || true
+        cordova create AhmyrixCordova com.ahmyrix.app Ahmyrix
+        cp -r www/* AhmyrixCordova/www/
+        cd AhmyrixCordova
+        cordova platform add android || true
+        cordova build android --release || cordova build android
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: AhmyrixApp-APK
+        path: |
+          AhmyrixCordova/platforms/android/app/build/outputs/apk/release/app-release.apk
+          AhmyrixCordova/platforms/android/app/build/outputs/apk/debug/app-debug.apk
