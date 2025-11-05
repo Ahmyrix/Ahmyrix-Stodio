@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ahmyrix</title>
+<style>
+    :root{
+        --bg:#0d0d0d;
+        --gold:#d4af37;
+        --gold-2:#ffd700;
+        --panel:#141414;
+        --muted:#c9a84a;
+    }
+    *{box-sizing:border-box}
+    body{
+        margin:0;
+        font-family: "Arial", sans-serif;
+        background:var(--bg);
+        color:var(--gold);
+        direction:rtl;
+        -webkit-font-smoothing:antialiased;
+        text-align:center;
+    }
+    .container{padding:20px;max-width:900px;margin:0 auto;}
+    header{padding:30px 10px}
+    h1{font-size:3.2rem;margin:0;letter-spacing:2px}
+    h3{font-size:1.05rem;margin:8px 0;color:var(--gold-2);font-weight:500}
+    .tools{display:grid;grid-template-columns:1fr;gap:18px;margin-top:28px}
+    .btn{
+        background:linear-gradient(90deg,var(--gold),var(--gold-2));
+        color:#0b0b0b;
+        border:none;
+        border-radius:14px;
+        padding:18px;
+        font-size:1.15rem;
+        cursor:pointer;
+        box-shadow:0 6px 18px rgba(0,0,0,0.6);
+        transition:transform .16s ease;
+    }
+    .btn:active{transform:scale(.99)}
+    .panel{display:none;margin-top:26px;background:linear-gradient(180deg,#0f0f0f,#111);padding:18px;border-radius:12px;border:1px solid rgba(212,175,55,0.08)}
+    label{display:block;margin:10px 0 6px;color:var(--muted);font-weight:600}
+    input[type="file"], select, textarea, input[type="text"]{
+        width:90%;
+        max-width:700px;
+        margin:6px auto 12px;
+        padding:10px 12px;
+        border-radius:10px;
+        background:#1d1d1d;border:none;color:var(--gold-2);
+        font-size:1rem;
+    }
+    textarea{height:110px;resize:vertical}
+    .row{display:flex;flex-direction:row;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+    .small{padding:10px 14px;border-radius:10px;background:#202020;color:var(--gold-2);border:none}
+    .scene-list{margin-top:18px;text-align:right}
+    .scene-item{background:#0f0f0f;border:1px solid rgba(212,175,55,0.06);padding:12px;border-radius:10px;margin-bottom:10px;color:#e8d89a}
+    footer{margin:40px 0 20px;color:rgba(212,175,55,0.7);font-size:.95rem}
+    /* responsive */
+    @media(min-width:720px){ .tools{grid-template-columns:repeat(1,1fr)} h1{font-size:4rem} }
+</style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Ahmyrix</h1>
+        <h3>مختبر الإنتاج الإعلاني الفاخر</h3>
+    </header>
+
+    <div class="tools">
+        <button class="btn" onclick="showTool('tool1')">صناعة المشاهد</button>
+        <button class="btn" onclick="showTool('tool2')">تحريك المشاهد</button>
+        <button class="btn" onclick="showTool('tool3')">تحرير الفيديو النهائي</button>
+    </div>
+
+    <!-- Tool 1 -->
+    <div id="tool1" class="panel">
+        <h2 style="color:var(--gold-2);margin:6px 0">صناعة المشاهد</h2>
+        <label>صورة المنتج</label>
+        <input type="file" accept="image/*" id="productImage">
+        <label>صورة الشخصية</label>
+        <input type="file" accept="image/*" id="characterImage">
+        <label>عدد الشخصيات في المشهد</label>
+        <select id="numCharacters">
+            <option value="1">1</option><option value="2">2</option>
+            <option value="3">3</option><option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        <label>وصف المشهد / فكرة الإعلان (اكتب السيناريو هنا)</label>
+        <textarea id="sceneDescription" placeholder="مثال: شخص يقف أمام ثلاجة مشروبات مليانة بأنواع مياه..."></textarea>
+
+        <div class="row">
+            <button class="btn" onclick="createScene()">إنشاء المشهد</button>
+            <button class="small" onclick="clearTool1()">تفريغ الحقول</button>
+        </div>
+
+        <div class="scene-list" id="scenesContainer"></div>
+    </div>
+
+    <!-- Tool 2 -->
+    <div id="tool2" class="panel">
+        <h2 style="color:var(--gold-2);margin:6px 0">تحريك المشاهد</h2>
+        <label>اختر المشهد لتحريكه (آخر مشهد مُنشأ يظهر تلقائياً)</label>
+        <div style="margin:10px 0"><button class="small" onclick="selectLastScene()">اختر آخر مشهد</button></div>
+
+        <label>تعليمات الحركة (مثال: افتح الثلاجة واطلع زجاجة المياه و امسكها)</label>
+        <textarea id="animationInstructions" placeholder="اكتب تعليمات الحركة التفصيلية هنا"></textarea>
+
+        <div class="row">
+            <button class="btn" onclick="animateScene()">تحريك المشهد</button>
+            <button class="small" onclick="previewAnimation()">معاينة خفيفة</button>
+        </div>
+
+        <div id="animPreview" style="margin-top:18px;color:var(--muted)"></div>
+    </div>
+
+    <!-- Tool 3 -->
+    <div id="tool3" class="panel">
+        <h2 style="color:var(--gold-2);margin:6px 0">تحرير الفيديو النهائي</h2>
+
+        <label>اختر موسيقى خلفية (اختياري)</label>
+        <input type="file" accept="audio/*" id="backgroundMusic">
+
+        <label>الكتابة التلقائية لكل مشهد (يمكن تعديلها)</label>
+        <textarea id="finalTextOverlay" placeholder="مثال: مشهد 1: ..."></textarea>
+
+        <div class="row">
+            <button class="btn" onclick="exportVideo()">دمج وإنشاء الفيديو النهائي</button>
+            <button class="small" onclick="clearAll()">تفريغ الكل</button>
+        </div>
+
+        <div id="exportResult" style="margin-top:18px;color:var(--muted)"></div>
+    </div>
+
+    <footer>Ahmyrix — كل الحقوق محفوظة للاستخدام الخاص</footer>
+</div>
+
+<script>
+/* ===== data model (local) ===== */
+let scenes = []; // كل مشهد: {id, productFile, characterFile, count, description, animation, previewData}
+
+/* ===== UI helpers ===== */
+function showTool(id){
+    const panels = ['tool1','tool2','tool3'];
+    panels.forEach(p=>{
+        document.getElementById(p).style.display = (p===id? 'block':'none');
+    });
+    // scroll to visible
+    setTimeout(()=>{ document.getElementById(id).scrollIntoView({behavior:'smooth'}); },80);
+}
+
+/* ===== Tool1 ===== */
+function readFileName(input){
+    if(!input || !input.files || input.files.length===0) return '';
+    return input.files[0].name;
+}
+function createScene(){
+    const p = document.getElementById('productImage');
+    const c = document.getElementById('characterImage');
+    const cnt = document.getElementById('numCharacters').value;
+    const desc = document.getElementById('sceneDescription').value.trim();
+
+    if(!p.files[0] || !c.files[0] || desc.length<3){
+        alert('يرجى رفع الصورتين وكتابة وصف المشهد (اقل من 3 حروف غير مقبول).');
+        return;
+    }
+
+    const id = Date.now();
+    const scene = {
+        id,
+        productFile: readFileName(p),
+        characterFile: readFileName(c),
+        count: parseInt(cnt),
+        description: desc,
+        animationInstructions: '',
+        previewData: null
+    };
+    scenes.push(scene);
+    renderScenes();
+    alert('تم إنشاء المشهد #' + scenes.length);
+    // نظف الحقول للاستخدام السريع
+    p.value=''; c.value=''; document.getElementById('sceneDescription').value='';
+}
+
+function renderScenes(){
+    const container = document.getElementById('scenesContainer');
+    container.innerHTML='';
+    for(let i=scenes.length-1;i>=0;i--){
+        const s = scenes[i];
+        const el = document.createElement('div');
+        el.className='scene-item';
+        el.innerHTML = `<strong>مشهد ${i+1}</strong>
+            <div>المنتج: ${s.productFile}</div>
+            <div>الممثل: ${s.characterFile}</div>
+            <div>عدد الشخصيات: ${s.count}</div>
+            <div style="margin-top:6px;color:#ffd">الوصف: ${escapeHtml(s.description)}</div>
+            <div style="margin-top:6px;color:#c9a84a">تعليمات الحركة: ${escapeHtml(s.animationInstructions||'غير محددة')}</div>
+            <div style="margin-top:8px"><button class="small" onclick="useScene(${s.id})">استخدام المشهد</button> <button class="small" onclick="removeScene(${s.id})">حذف</button></div>`;
+        container.appendChild(el);
+    }
+}
+function useScene(id){
+    const s = scenes.find(x=>x.id===id);
+    if(!s) return alert('مشهد مش موجود');
+    document.getElementById('animationInstructions').value = s.animationInstructions || '';
+    document.getElementById('finalTextOverlay').value = s.description;
+    showTool('tool2');
+}
+function removeScene(id){
+    scenes = scenes.filter(x=>x.id!==id);
+    renderScenes();
+}
+function clearTool1(){
+    document.getElementById('productImage').value='';
+    document.getElementById('characterImage').value='';
+    document.getElementById('sceneDescription').value='';
+}
+
+/* ===== Tool2 ===== */
+function selectLastScene(){
+    if(scenes.length===0) return alert('مافيش مشاهد متاحة');
+    const last = scenes[scenes.length-1];
+    useScene(last.id);
+    alert('آخر مشهد اتسحب للتعديل');
+}
+function animateScene(){
+    if(scenes.length===0) return alert('يرجى إنشاء مشهد أولاً');
+    const instructions = document.getElementById('animationInstructions').value.trim();
+    if(instructions.length<2) return alert('اكتب تعليمات الحركة المراد تطبيقها');
+    // نربطه بآخر مشهد كمثال عملي
+    scenes[scenes.length-1].animationInstructions = instructions;
+    // توليد previewData وهمي (لأن الحركة حقيقية محتاجة محرك)
+    scenes[scenes.length-1].previewData = {
+        frames: Math.min(8, 2 + Math.floor(instructions.length/20)),
+        note: 'معاينة مبسطة للتحريك'
+    };
+    document.getElementById('animPreview').innerText = 'معاينة: ' + scenes[scenes.length-1].previewData.note + ' — إطارات: ' + scenes[scenes.length-1].previewData.frames;
+    renderScenes();
+    alert('تم حفظ تعليمات التحريك للمشهد الأخير');
+}
+function previewAnimation(){
+    if(scenes.length===0) return alert('لا يوجد مشاهد');
+    const s = scenes[scenes.length-1];
+    if(!s.previewData) return alert('لا توجد معاينة مُفعلة. اضغط "تحريك المشهد" أولاً.');
+    alert('معاينة خفيفة — ' + s.previewData.note + ' — إطارات: ' + s.previewData.frames);
+}
+
+/* ===== Tool3 ===== */
+function exportVideo(){
+    if(scenes.length===0) return alert('لا يوجد مشاهد لدمجها');
+    const bg = document.getElementById('backgroundMusic').files[0];
+    const overlay = document.getElementById('finalTextOverlay').value.trim();
+
+    // نجمع الداتا النهائية بشكل JSON (تمثيل محلي قبل عملية تصدير حقيقية)
+    const final = scenes.map((s,i)=>({
+        index: i+1,
+        productFile: s.productFile,
+        characterFile: s.characterFile,
+        description: s.description,
+        animation: s.animationInstructions || '',
+        preview: s.previewData || null
+    }));
+
+    const exportData = {
+        createdAt: new Date().toISOString(),
+        scenes: final,
+        backgroundMusic: bg ? bg.name : '',
+        finalTextOverlay: overlay
+    };
+
+    // نعرض للمستخدم أن العملية تمت (فعلياً التصدير يحتاج محرك فيديو حقيقي)
+    document.getElementById('exportResult').innerText = 'تم تحضير بيانات الفيديو النهائي (تمثيل محلي) — افتح console لتحميل JSON.';
+    console.log('Ahmyrix exportData:', exportData);
+
+    // تنزيل JSON للملف (client-side) لتقدر تحتفظ بالـ project locally
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'ahmyrix_project_' + Date.now() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    alert('تم تجهيز ملف المشروع للتصدير. يمكنك الآن استخدامه للـ تحرير أو البناء الخارجي.');
+}
+
+/* ===== helpers ===== */
+function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function clearAll(){ if(confirm('تفريغ كل المشاهد؟')){ scenes=[]; renderScenes(); document.getElementById('exportResult').innerText=''; alert('تم التفريغ'); } }
+
+/* ==== init UI ==== */
+renderScenes();
+showTool('tool1');
+</script>
+</body>
+</html>
